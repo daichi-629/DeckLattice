@@ -1,171 +1,56 @@
 # DeckLattice
 
-構造化JSONからReveal.jsスライドを生成し、Playwrightで表示検証とPDF出力を行うCLIです。
-Pythonやプロジェクトごとのnpm依存は不要です。
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## Development Setup
+構造化 JSON から Reveal.js スライドを生成し、Playwright で表示検証・PDF 出力を行う CLI です。
+Python やプロジェクトごとの npm 依存は不要です。
+
+## インストール
 
 ```bash
-npm install
+npm install -g decklattice
 npx playwright install chromium
-npm run build
-npm link
 ```
 
-## CLI
+## クイックスタート
 
 ```bash
-decklattice init ./presentation --skills
-decklattice validate ./presentation
-decklattice build ./presentation
-decklattice verify ./presentation
-decklattice pdf ./presentation
-decklattice screenshot ./presentation --slide 3
-```
+# 1. 新しいスライドプロジェクトを作成
+decklattice init ./my-slides
 
-対象ディレクトリを省略すると現在ディレクトリを使います。`build`以降のコマンドは、
-現在位置から親ディレクトリへ`decklattice.config.json`または`deck/slides.json`を探索します。
+# 2. slides.json を編集してスライドを作る
+cd my-slides
 
-```bash
-cd presentation/deck
+# 3. HTML をビルド
 decklattice build
+
+# 4. 表示を検証
+decklattice verify
+
+# 5. PDF を出力
+decklattice pdf
 ```
 
-### init
+## コマンド一覧
 
-```bash
-decklattice init [directory] [--force] [--skills]
-```
+| コマンド | 説明 |
+|---|---|
+| `init [dir]` | テンプレートを展開して新プロジェクトを作成 |
+| `validate [dir]` | `slides.json` の型・安全性を検証 |
+| `build [dir]` | Reveal.js HTML を生成 |
+| `verify [dir]` | Playwright でレンダリングを検査 |
+| `pdf [dir]` | PDF を出力 |
+| `screenshot [dir] --slide <n>` | 指定スライドを PNG で出力 |
 
-`templates/default/`を対象ディレクトリへ展開します。既存ファイルは上書きせず、
-明示的に`--force`を指定した場合だけ置き換えます。
+詳細は [docs/cli-reference.md](docs/cli-reference.md) を参照してください。
 
-`--skills`を指定すると、CLI操作用Agent skillを
-`.skills/decklattice/`へ追加します。
+## ドキュメント
 
-```bash
-decklattice init ./presentation --skills
-```
+- [CLI リファレンス](docs/cli-reference.md) — 全コマンドのオプション
+- [生成プロジェクトの構造](docs/project-structure.md) — ファイル構成と patch の仕組み
+- [設定ファイル](docs/configuration.md) — `decklattice.config.json` のオプション
+- [開発者ガイド](docs/development.md) — ビルド手順・ソース構成
 
-### validate
+## ライセンス
 
-```bash
-decklattice validate [directory]
-```
-
-`slides.json`の型、必須項目、件数制限、重複ID、追加CSS、SVGの安全性を検証します。
-
-### build
-
-```bash
-decklattice build [directory]
-```
-
-固定バージョンのReveal.js CDNを参照するHTMLを生成し、ページ単位patchを厳密に適用します。
-
-### verify
-
-```bash
-decklattice verify [directory]
-```
-
-ビルド後、Playwright Chromiumでoverflow、画像ロード、alt、HTTP、JavaScriptエラーを検査します。
-
-### pdf
-
-```bash
-decklattice pdf [directory] [--output path/to/slides.pdf]
-```
-
-検証成功後にPDFを出力します。既定値は`deck/output/slides.pdf`です。
-
-### screenshot
-
-```bash
-decklattice screenshot [directory] --slide <number|id> [--output path/to/slide.png]
-```
-
-AIやレビュー担当者がページ単位で確認できるよう、指定したスライドを1280x720のPNGで出力します。
-番号は1始まりです。`slides.json`のIDでも指定できます。
-
-```bash
-decklattice screenshot --slide 3
-decklattice screenshot --slide slide-3
-decklattice screenshot --slide slide-3 --output review/slide-3.png
-```
-
-出力先省略時は`deck/output/{slide_id}.png`です。
-
-## Generated Project
-
-```text
-presentation/
-├── decklattice.config.json
-└── deck/
-    ├── slides.json
-    ├── slides.schema.json
-    ├── template.html
-    ├── styles.css
-    ├── additional.css
-    └── patches/
-```
-
-- 内容は`slides.json`
-- 共通レイアウトは`styles.css`
-- デッキ固有の装飾は`additional_css`と`additional_classes`
-- ページ固有のHTML構造変更は`patches/{slide_id}.patch`
-
-patchは生成された`<section>`へ完全一致で適用され、不一致ならビルドが失敗します。
-
-Reveal.jsは`cdn.jsdelivr.net`から`6.0.1`を固定指定して読み込みます。CLIや生成プロジェクトへ
-Reveal.js本体はコピー・バンドルされません。
-
-## Package Contents
-
-npmパッケージに含まれるもの:
-
-- コンパイル済みCLI (`dist/`)
-- 初期化用テンプレート、CSS、JSON Schema (`templates/`)
-- `--skills`で展開するAgent skill (`.skills/decklattice/`)
-- READMEとLICENSE
-
-npm依存としてインストールされるもの:
-
-- Playwright
-- XML検証ライブラリ
-
-含まれないもの:
-
-- Reveal.js本体。実行時に固定バージョンCDNから読み込みます。
-- Playwright Chromiumバイナリ。`npx playwright install chromium`で別途取得します。
-- サンプル画像や完成済みスライドデッキ。
-
-したがって`verify`、`pdf`、`screenshot`はReveal.js CDNへアクセスできるネットワーク環境が必要です。
-
-## Configuration
-
-```json
-{
-  "deckDir": "deck",
-  "output": "deck/index.html",
-  "pdfOutput": "deck/output/slides.pdf"
-}
-```
-
-相対アセット参照を維持するため、`output`は`deckDir`直下のHTMLファイルにしてください。
-
-## Development
-
-```bash
-npm run check
-npm test
-npm pack --dry-run
-```
-
-ソースは責務別に分割されています。
-
-- `src/core/`: 検証、レンダリング、patch、ビルド
-- `src/browser/`: Playwright検証、PDF、ローカルサーバー
-- `src/commands/`: CLIコマンド
-- `templates/default/`: `init`用テンプレート
-- `test/`: 単体・CLI E2Eテスト
+[MIT](LICENSE)

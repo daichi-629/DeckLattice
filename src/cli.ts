@@ -6,6 +6,8 @@ import { pdfCommand } from './commands/pdf.js';
 import { screenshotCommand } from './commands/screenshot.js';
 import { validateCommand } from './commands/validate.js';
 import { verifyCommand } from './commands/verify.js';
+import { templateCommand } from './commands/template.js';
+import { updateSkillCommand } from './commands/skill.js';
 import { DeckLatticeError } from './core/errors.js';
 import { packageRoot } from './package.js';
 
@@ -18,6 +20,8 @@ Usage:
   decklattice verify [directory]
   decklattice pdf [directory] [--output <path>]
   decklattice screenshot [directory] --slide <number|id> [--output <path>]
+  decklattice template <html|css>
+  decklattice skill update [directory]
   decklattice --version
   decklattice --help
 
@@ -27,6 +31,7 @@ init search parent directories for decklattice.config.json or deck/slides.json.
 
 interface ParsedArguments {
   command?: string;
+  subcommand?: string;
   directory?: string;
   force: boolean;
   skills: boolean;
@@ -73,6 +78,13 @@ function parseArguments(argv: string[]): ParsedArguments {
     } else {
       positional.push(argument);
     }
+  }
+  if (positional[0] === 'skill') {
+    if (positional.length > 3) {
+      throw new DeckLatticeError(`Unexpected argument: ${positional[3]}`);
+    }
+    [result.command, result.subcommand, result.directory] = positional;
+    return result;
   }
   if (positional.length > 2) {
     throw new DeckLatticeError(`Unexpected argument: ${positional[2]}`);
@@ -124,6 +136,15 @@ async function main(): Promise<void> {
         arguments_.directory,
         arguments_.output
       );
+      break;
+    case 'template':
+      await templateCommand(arguments_.directory);
+      break;
+    case 'skill':
+      if (arguments_.subcommand !== 'update') {
+        throw new DeckLatticeError('skill requires update');
+      }
+      await updateSkillCommand(arguments_.directory);
       break;
     default:
       throw new DeckLatticeError(`Unknown command: ${arguments_.command}`);

@@ -8,7 +8,6 @@ export interface ProjectContext {
   rootDir: string;
   deckDir: string;
   slidesPath: string;
-  templatePath: string;
   outputPath: string;
   patchesDir: string;
   pdfOutputPath: string;
@@ -33,6 +32,8 @@ export type SlideType =
   | 'image_right'
   | 'full_image'
   | 'chart'
+  | 'mermaid'
+  | 'math'
   | 'quote'
   | 'code'
   | 'summary'
@@ -44,6 +45,7 @@ export type SlideType =
 
 export interface DeckData {
   deck_title: string;
+  short_title?: string;
   lang?: string;
   audience?: string;
   tone?: string;

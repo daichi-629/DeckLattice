@@ -6,6 +6,7 @@
   "required": ["deck_title", "slides"],
   "properties": {
     "deck_title": { "type": "string", "minLength": 1 },
+    "short_title": { "type": "string", "minLength": 1 },
     "lang": { "type": "string", "minLength": 2 },
     "audience": { "type": "string" },
     "tone": { "type": "string" },
@@ -40,6 +41,8 @@
             "image_right",
             "full_image",
             "chart",
+            "mermaid",
+            "math",
             "quote",
             "code",
             "summary",
@@ -51,6 +54,17 @@
           ]
         },
         "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "chart_alt": { "type": "string", "minLength": 1 },
+        "chart_config": {
+          "type": "object",
+          "required": ["type", "data"],
+          "properties": {
+            "type": { "type": "string", "minLength": 1 },
+            "data": { "type": "object" },
+            "options": { "type": "object" }
+          },
+          "additionalProperties": true
+        },
         "speaker_note": { "type": "string", "minLength": 1, "maxLength": 4000 },
         "additional_classes": {
           "type": "array",
@@ -101,6 +115,14 @@
             {
               "properties": { "type": { "const": "chart" } },
               "required": ["headline", "items"]
+            },
+            {
+              "properties": { "type": { "const": "mermaid" } },
+              "required": ["headline", "diagram"]
+            },
+            {
+              "properties": { "type": { "const": "math" } },
+              "required": ["headline", "equation"]
             },
             {
               "properties": { "type": { "const": "quote" } },

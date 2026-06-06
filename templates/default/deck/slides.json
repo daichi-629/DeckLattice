@@ -1,5 +1,6 @@
 {
   "deck_title": "Presentation Title",
+  "short_title": "Presentation",
   "lang": "ja",
   "audience": "Target audience",
   "tone": "Clear and concise",
@@ -14,24 +15,60 @@
       "speaker_note": "Introduce the presentation and its purpose."
     },
     {
-      "id": "overview",
-      "type": "summary",
-      "headline": "Overview",
+      "id": "section-1",
+      "type": "section",
+      "headline": "伝えたいことを一つに絞る",
+      "speaker_note": "章の切り替わりを明示します。"
+    },
+    {
+      "id": "result",
+      "type": "chart",
+      "headline": "結果は表ではなく比較で見せる",
       "items": [
-        {
-          "title": "Point 1",
-          "desc": "Replace with the first key point."
-        },
-        {
-          "title": "Point 2",
-          "desc": "Replace with the second key point."
-        },
-        {
-          "title": "Point 3",
-          "desc": "Replace with the third key point."
-        }
+        "最重要の差を強調する",
+        "詳細値は発表者ノートへ移す"
       ],
-      "speaker_note": "Explain the structure of the presentation."
+      "chart_alt": "BeforeとAfterの比較棒グラフ",
+      "chart_config": {
+        "type": "bar",
+        "data": {
+          "labels": ["Before", "After"],
+          "datasets": [
+            {
+              "label": "Score",
+              "data": [42, 78],
+              "backgroundColor": ["#b9c7d8", "#1769e0"],
+              "borderRadius": 6
+            }
+          ]
+        },
+        "options": {
+          "plugins": {
+            "legend": { "display": false }
+          },
+          "scales": {
+            "y": { "beginAtZero": true, "max": 100 }
+          }
+        }
+      },
+      "speaker_note": "Chart.jsの設定はchart_configに記述します。"
+    },
+    {
+      "id": "flow",
+      "type": "mermaid",
+      "headline": "手法は一本の流れで見せる",
+      "diagram": "flowchart LR\n  A[Input] --> B[Process]\n  B --> C[Result]",
+      "speaker_note": "Mermaid記法はdiagramに記述します。"
+    },
+    {
+      "id": "equation",
+      "type": "math",
+      "headline": "数式は大きく、意味は短く",
+      "equation": "\\[ E = mc^2 \\]",
+      "items": [
+        "インライン数式も全スライドで利用可能: \\( x + y = z \\)"
+      ],
+      "speaker_note": "MathJaxのTeX区切りを利用します。JSONではバックスラッシュを二重化します。"
     }
   ]
 }

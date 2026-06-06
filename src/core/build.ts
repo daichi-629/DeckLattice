@@ -11,6 +11,7 @@ import { escapeHtml } from './html.js';
 import { DeckLatticeError } from './errors.js';
 import { validateDeck } from './validation.js';
 import type { DeckData, ProjectContext } from './types.js';
+import { packageRoot } from '../package.js';
 
 export interface BuildOptions {
   validateOnly?: boolean;
@@ -47,8 +48,16 @@ async function renderDeck(
   log: (message: string) => void
 ): Promise<string> {
   const slides: string[] = [];
+  let sectionNumber = 0;
   for (const [offset, slide] of data.slides.entries()) {
-    let output = renderSlide(slide, offset + 1, data.slides.length, data.deck_title);
+    if (slide.type === 'section') sectionNumber += 1;
+    let output = renderSlide(
+      slide,
+      offset + 1,
+      data.slides.length,
+      data.short_title ?? data.deck_title,
+      slide.type === 'section' ? sectionNumber : undefined
+    );
     const patchPath = resolve(project.patchesDir, `${slide.id}.patch`);
     if (await isFile(patchPath)) {
       try {
@@ -64,17 +73,15 @@ async function renderDeck(
     slides.push(output);
   }
 
-  let template: string;
-  try {
-    template = await readFile(project.templatePath, 'utf8');
-  } catch {
-    throw new DeckLatticeError(
-      `${relative(project.rootDir, project.templatePath)} not found`
-    );
-  }
+  const runtimeDirectory = resolve(packageRoot(), 'templates/runtime');
+  const [template, styles] = await Promise.all([
+    readFile(resolve(runtimeDirectory, 'template.html'), 'utf8'),
+    readFile(resolve(runtimeDirectory, 'styles.css'), 'utf8')
+  ]);
   const placeholders = [
     '{{ deck_title }}',
     '{{ lang }}',
+    '{{ styles_css }}',
     '{{ additional_css }}',
     '{{ slides_html }}'
   ];
@@ -91,6 +98,7 @@ async function renderDeck(
   return template
     .replace('{{ deck_title }}', escapeHtml(data.deck_title))
     .replace('{{ lang }}', escapeHtml(data.lang ?? 'ja'))
+    .replace('{{ styles_css }}', styles)
     .replace('{{ additional_css }}', cssLinks)
     .replace('{{ slides_html }}', slides.join('\n'));
 }

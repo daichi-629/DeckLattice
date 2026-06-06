@@ -85,7 +85,6 @@ export async function resolveProject(
     rootDir,
     deckDir,
     slidesPath: resolve(deckDir, 'slides.json'),
-    templatePath: resolve(deckDir, 'template.html'),
     outputPath,
     patchesDir: resolve(deckDir, 'patches'),
     pdfOutputPath: resolveFromRoot(rootDir, config.pdfOutput),

@@ -57,7 +57,8 @@ function renderBody(
   source: BaseSlide,
   index: number,
   total: number,
-  deckTitle: string
+  deckTitle: string,
+  sectionNumber?: number
 ): string {
   const slide = record(source);
   const type = source.type;
@@ -83,9 +84,10 @@ function renderBody(
     }
     case 'section': {
       const label = text(slide, 'section_label');
+      const sectionLabel = label || `SECTION ${String(sectionNumber ?? index).padStart(2, '0')}`;
       return (
         '<div class="slide-content section">'
-        + (label ? `<div class="section-label">${escapeHtml(label)}</div>` : '')
+        + `<div class="section-label">${escapeHtml(sectionLabel)}</div>`
         + `<h2>${escapeHtml(headline)}</h2></div>`
       );
     }
@@ -150,9 +152,22 @@ function renderBody(
     }
     case 'chart': {
       const chartSvg = text(slide, 'chart_svg');
-      const chart = chartSvg
-        ? sanitizeSvg(chartSvg)
-        : (
+      let chart: string;
+      if (slide.chart_config) {
+        const config = JSON.stringify(slide.chart_config)
+          .replaceAll('&', '\\u0026')
+          .replaceAll('<', '\\u003c')
+          .replaceAll('>', '\\u003e');
+        chart = (
+          '<div class="chart-canvas-container">'
+          + `<canvas data-chart-config="${escapeHtml(config)}" `
+          + `role="img" aria-label="${escapeHtml(text(slide, 'chart_alt', headline))}"></canvas>`
+          + '</div>'
+        );
+      } else if (chartSvg) {
+        chart = sanitizeSvg(chartSvg);
+      } else {
+        chart = (
           '<svg viewBox="0 0 400 300" role="img" aria-label="Sample bar chart">'
           + '<rect x="50" y="50" width="40" height="200" rx="4"/>'
           + '<rect x="130" y="100" width="40" height="150" rx="4" opacity=".8"/>'
@@ -160,11 +175,36 @@ function renderBody(
           + '<rect x="290" y="80" width="40" height="170" rx="4" opacity=".6"/>'
           + '<line x1="30" y1="250" x2="360" y2="250"/></svg>'
         );
+      }
       return (
         `<div class="slide-content chart">${header}<div class="slide-body">`
         + `<div class="column">${listHtml(strings(slide.items))}</div>`
         + `<div class="column"><div class="chart-container">${chart}</div></div>`
         + `</div>${footer}</div>`
+      );
+    }
+    case 'mermaid': {
+      const items = Array.isArray(slide.items)
+        ? `<div class="column">${listHtml(strings(slide.items))}</div>`
+        : '';
+      const noItemsClass = items ? '' : ' no-items';
+      return (
+        `<div class="slide-content mermaid_slide${noItemsClass}">${header}`
+        + '<div class="slide-body">'
+        + items
+        + '<div class="mermaid-container">'
+        + `<pre class="mermaid">${escapeHtml(text(slide, 'diagram'))}</pre>`
+        + `</div></div>${footer}</div>`
+      );
+    }
+    case 'math': {
+      const items = Array.isArray(slide.items)
+        ? `<div class="math-notes">${listHtml(strings(slide.items))}</div>`
+        : '';
+      return (
+        `<div class="slide-content math_slide">${header}<div class="slide-body">`
+        + `<div class="math-equation">${escapeHtml(text(slide, 'equation'))}</div>`
+        + `${items}</div>${footer}</div>`
       );
     }
     case 'quote': {
@@ -263,11 +303,12 @@ export function renderSlide(
   slide: BaseSlide,
   index: number,
   total: number,
-  deckTitle: string
+  deckTitle: string,
+  sectionNumber?: number
 ): string {
   const classes = slide.additional_classes?.join(' ') ?? '';
   const classAttribute = classes ? ` class="${escapeHtml(classes)}"` : '';
-  const body = renderBody(slide, index, total, deckTitle);
+  const body = renderBody(slide, index, total, deckTitle, sectionNumber);
   const notes = slide.speaker_note
     ? `<aside class="notes">${escapeHtml(slide.speaker_note)}</aside>`
     : '';

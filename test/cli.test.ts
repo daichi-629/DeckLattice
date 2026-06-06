@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { access, mkdtemp, readFile, stat } from 'node:fs/promises';
+import { access, mkdtemp, readFile, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { spawn } from 'node:child_process';
@@ -38,7 +38,18 @@ test('init, validate and build work in an arbitrary directory', async () => {
     await readFile(resolve(project, 'deck/index.html'), 'utf8'),
     /Presentation Title/
   );
+  await assert.rejects(access(resolve(project, 'deck/template.html')));
+  await assert.rejects(access(resolve(project, 'deck/styles.css')));
+  assert.match(
+    await readFile(resolve(project, 'deck/index.html'), 'utf8'),
+    /--color-bg: #ffffff/
+  );
   await assert.rejects(access(resolve(project, '.skills/decklattice/SKILL.md')));
+});
+
+test('template command prints built-in HTML and CSS', async () => {
+  assert.match((await run(['template', 'html'])).stdout, /<!DOCTYPE html>/);
+  assert.match((await run(['template', 'css'])).stdout, /--color-bg: #ffffff/);
 });
 
 test('init --skills installs the decklattice agent skill', async () => {
@@ -58,4 +69,22 @@ test('init --skills installs the decklattice agent skill', async () => {
     ),
     /display_name: "DeckLattice"/
   );
+});
+
+test('skill update installs and replaces the decklattice agent skill', async () => {
+  const parent = await mkdtemp(resolve(tmpdir(), 'decklattice-skill-update-'));
+  const project = resolve(parent, 'presentation');
+  await run(['init', project]);
+  const skillPath = resolve(project, '.skills/decklattice/SKILL.md');
+
+  const installResult = await run(['skill', 'update', project]);
+  assert.match(installResult.stdout, /Updated agent skill/);
+  assert.match(await readFile(skillPath, 'utf8'), /decklattice template html/);
+
+  await writeFile(skillPath, 'outdated');
+  await writeFile(resolve(project, '.skills/decklattice/stale.txt'), 'stale');
+  await run(['skill', 'update', project]);
+
+  assert.match(await readFile(skillPath, 'utf8'), /^---\nname: decklattice\n/m);
+  await assert.rejects(access(resolve(project, '.skills/decklattice/stale.txt')));
 });

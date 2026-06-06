@@ -19,7 +19,6 @@ async function projectContext(): Promise<ProjectContext> {
     rootDir,
     deckDir,
     slidesPath: resolve(deckDir, 'slides.json'),
-    templatePath: resolve(deckDir, 'template.html'),
     outputPath: resolve(deckDir, 'index.html'),
     patchesDir: resolve(deckDir, 'patches'),
     pdfOutputPath: resolve(deckDir, 'output/slides.pdf'),
@@ -44,6 +43,71 @@ test('message content is escaped', () => {
   );
   assert.doesNotMatch(output, /<script>/);
   assert.match(output, /&lt;script&gt;/);
+});
+
+test('chart config is rendered as an escaped canvas data attribute', () => {
+  const output = renderSlide(
+    {
+      id: 'chart-1',
+      type: 'chart',
+      headline: 'Results',
+      items: ['Improved'],
+      chart_alt: 'Comparison chart',
+      chart_config: {
+        type: 'bar',
+        data: { labels: ['<Before>'], datasets: [] }
+      }
+    },
+    1,
+    1,
+    'Deck'
+  );
+  assert.match(output, /canvas data-chart-config=/);
+  assert.match(output, /aria-label="Comparison chart"/);
+  assert.doesNotMatch(output, /<Before>/);
+});
+
+test('section labels are generated when omitted', () => {
+  const output = renderSlide(
+    { id: 'section-1', type: 'section', headline: 'Method' },
+    2,
+    4,
+    'Deck',
+    1
+  );
+  assert.match(output, /SECTION 01/);
+});
+
+test('mermaid source is escaped', () => {
+  const output = renderSlide(
+    {
+      id: 'flow',
+      type: 'mermaid',
+      headline: 'Flow',
+      diagram: 'flowchart LR\nA[<script>] --> B'
+    },
+    1,
+    1,
+    'Deck'
+  );
+  assert.match(output, /class="mermaid"/);
+  assert.doesNotMatch(output, /<script>/);
+});
+
+test('math source is escaped and preserves TeX delimiters', () => {
+  const output = renderSlide(
+    {
+      id: 'equation',
+      type: 'math',
+      headline: 'Equation',
+      equation: '\\[ x < y \\]'
+    },
+    1,
+    1,
+    'Deck'
+  );
+  assert.match(output, /class="math-equation"/);
+  assert.match(output, /\\\[ x &lt; y \\\]/);
 });
 
 test('unsafe SVG is rejected', () => {
@@ -110,6 +174,25 @@ test('image slides require alt text', async () => {
           headline: 'Image',
           items: ['Item'],
           image_url: 'image.png'
+        }]
+      },
+      await projectContext()
+    ),
+    DeckLatticeError
+  );
+});
+
+test('chart config requires type and data', async () => {
+  await assert.rejects(
+    validateDeck(
+      {
+        deck_title: 'Deck',
+        slides: [{
+          id: 'chart-1',
+          type: 'chart',
+          headline: 'Chart',
+          items: ['Item'],
+          chart_config: { type: 'bar' }
         }]
       },
       await projectContext()

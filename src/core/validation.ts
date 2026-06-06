@@ -13,6 +13,8 @@ const SLIDE_TYPES = new Set<SlideType>([
   'image_right',
   'full_image',
   'chart',
+  'mermaid',
+  'math',
   'quote',
   'code',
   'summary',
@@ -32,6 +34,8 @@ const REQUIRED_FIELDS: Record<SlideType, string[]> = {
   image_right: ['headline', 'items', 'image_url', 'image_alt'],
   full_image: ['headline', 'image_url', 'image_alt'],
   chart: ['headline', 'items'],
+  mermaid: ['headline', 'diagram'],
+  math: ['headline', 'equation'],
   quote: ['quote'],
   code: ['headline', 'code'],
   summary: ['headline', 'items'],
@@ -131,10 +135,13 @@ function validateSlide(slideValue: unknown, index: number): BaseSlide {
     'image_url',
     'image_alt',
     'image_caption',
-    'source'
+    'source',
+    'diagram',
+    'equation'
   ]) {
     if (field in slide) stringValue(slide[field], `${path}.${field}`);
   }
+  if ('chart_alt' in slide) stringValue(slide.chart_alt, `${path}.chart_alt`);
   if (typeof slide.headline === 'string' && slide.headline.length > 80) {
     throw new DeckLatticeError(`${path}.headline must be at most 80 characters`);
   }
@@ -144,6 +151,12 @@ function validateSlide(slideValue: unknown, index: number): BaseSlide {
   if ('meta' in slide) stringArray(slide.meta, `${path}.meta`);
   if (type === 'image_right' || type === 'chart') {
     stringArray(slide.items, `${path}.items`, 1, 5);
+  }
+  if (type === 'mermaid' && 'items' in slide) {
+    stringArray(slide.items, `${path}.items`, 1, 4);
+  }
+  if (type === 'math' && 'items' in slide) {
+    stringArray(slide.items, `${path}.items`, 1, 4);
   }
   if ('additional_classes' in slide) {
     for (const className of stringArray(
@@ -213,6 +226,11 @@ function validateSlide(slideValue: unknown, index: number): BaseSlide {
   if (type === 'chart' && 'chart_svg' in slide) {
     sanitizeSvg(stringValue(slide.chart_svg, `${path}.chart_svg`), `${path}.chart_svg`);
   }
+  if (type === 'chart' && 'chart_config' in slide) {
+    const config = objectValue(slide.chart_config, `${path}.chart_config`);
+    stringValue(config.type, `${path}.chart_config.type`);
+    objectValue(config.data, `${path}.chart_config.data`);
+  }
 
   return slide as unknown as BaseSlide;
 }
@@ -223,6 +241,7 @@ export async function validateDeck(
 ): Promise<DeckData> {
   const root = objectValue(value, 'slides.json root');
   const deckTitle = stringValue(root.deck_title, 'deck_title');
+  if ('short_title' in root) stringValue(root.short_title, 'short_title');
   if ('lang' in root) stringValue(root.lang, 'lang');
 
   const cssFiles = 'additional_css' in root
