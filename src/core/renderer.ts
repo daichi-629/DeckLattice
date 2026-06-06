@@ -348,12 +348,13 @@ export function renderSlide(
 ): string {
   const classes = slide.additional_classes?.join(' ') ?? '';
   const classAttribute = classes ? ` class="${escapeHtml(classes)}"` : '';
+  const bgAttr = slide.type === 'section' ? ' data-background-color="#0d3f91"' : '';
   const body = renderBody(slide, index, total, deckTitle, sectionNumber);
   const notes = slide.speaker_note
     ? `<aside class="notes">${escapeHtml(slide.speaker_note)}</aside>`
     : '';
   return (
-    `<section data-slide-id="${escapeHtml(slide.id)}"${classAttribute}>`
+    `<section data-slide-id="${escapeHtml(slide.id)}"${classAttribute}${bgAttr}>`
     + `${body}${notes}</section>`
   );
 }
