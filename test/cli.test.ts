@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { access, mkdtemp, readFile, stat, writeFile } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, readFile, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { spawn } from 'node:child_process';
@@ -88,3 +88,35 @@ test('skill update installs and replaces the decklattice agent skill', async () 
   assert.match(await readFile(skillPath, 'utf8'), /^---\nname: decklattice\n/m);
   await assert.rejects(access(resolve(project, '.skills/decklattice/stale.txt')));
 });
+
+test('html-before and html-after command prints html before and after patch', async () => {
+  const parent = await mkdtemp(resolve(tmpdir(), 'decklattice-html-command-'));
+  const project = resolve(parent, 'presentation');
+  await run(['init', project]);
+
+  const resultBefore = await run(['html-before', project, '--slide', 'title']);
+  const beforeHtml = resultBefore.stdout;
+
+  const lines = beforeHtml.split(/\r?\n/);
+  const firstLine = lines[0];
+
+  const patchContent = [
+    '--- slide.html',
+    '+++ slide.html',
+    '@@ -1,1 +1,1 @@',
+    `-${firstLine}`,
+    `+${firstLine}<!-- patched -->`
+  ].join('\n');
+
+  const patchesDir = resolve(project, 'deck/patches');
+  await mkdir(patchesDir, { recursive: true });
+  await writeFile(resolve(patchesDir, 'title.patch'), patchContent, 'utf8');
+
+  const resultAfter = await run(['html-after', project, '--slide', 'title']);
+  assert.match(resultAfter.stdout, /<!-- patched -->/);
+
+  // パッチ適用前には patch が含まれていないことの確認
+  const resultBeforeAgain = await run(['html-before', project, '--slide', 'title']);
+  assert.doesNotMatch(resultBeforeAgain.stdout, /<!-- patched -->/);
+});
+

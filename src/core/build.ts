@@ -7,7 +7,7 @@ import {
 import { dirname, relative, resolve } from 'node:path';
 import { applyPatch } from './patch.js';
 import { renderSlide } from './renderer.js';
-import { escapeHtml } from './html.js';
+import { escapeHtml, formatHtml } from './html.js';
 import { DeckLatticeError } from './errors.js';
 import { validateDeck } from './validation.js';
 import type { DeckData, ProjectContext } from './types.js';
@@ -58,6 +58,7 @@ async function renderDeck(
       data.short_title ?? data.deck_title,
       slide.type === 'section' ? sectionNumber : undefined
     );
+    output = formatHtml(output);
     const patchPath = resolve(project.patchesDir, `${slide.id}.patch`);
     if (await isFile(patchPath)) {
       try {
@@ -120,3 +121,64 @@ export async function buildProject(
   log(`Built: ${relative(project.rootDir, project.outputPath)}`);
   return data;
 }
+
+export interface SlideTarget {
+  id: string;
+  index: number;
+}
+
+export function resolveSlide(data: DeckData, selector: string): SlideTarget {
+  if (/^[1-9]\d*$/.test(selector)) {
+    const index = Number(selector) - 1;
+    const slide = data.slides[index];
+    if (!slide) {
+      throw new DeckLatticeError(
+        `slide number ${selector} is out of range (1-${data.slides.length})`
+      );
+    }
+    return { id: slide.id, index };
+  }
+
+  const index = data.slides.findIndex((slide) => slide.id === selector);
+  if (index === -1) {
+    throw new DeckLatticeError(`slide id not found: ${selector}`);
+  }
+  return { id: data.slides[index].id, index };
+}
+
+export async function renderSingleSlideHtml(
+  project: ProjectContext,
+  selector: string,
+  applyPatchFlag: boolean
+): Promise<string> {
+  const data = await validateDeck(await loadDeck(project), project);
+  const target = resolveSlide(data, selector);
+  const slide = data.slides[target.index];
+
+  let sectionNumber = 0;
+  for (let i = 0; i <= target.index; i++) {
+    if (data.slides[i].type === 'section') {
+      sectionNumber += 1;
+    }
+  }
+
+  let output = renderSlide(
+    slide,
+    target.index + 1,
+    data.slides.length,
+    data.short_title ?? data.deck_title,
+    slide.type === 'section' ? sectionNumber : undefined
+  );
+
+  output = formatHtml(output);
+
+  if (applyPatchFlag) {
+    const patchPath = resolve(project.patchesDir, `${slide.id}.patch`);
+    if (await isFile(patchPath)) {
+      output = applyPatch(output, await readFile(patchPath, 'utf8'));
+    }
+  }
+
+  return output;
+}
+

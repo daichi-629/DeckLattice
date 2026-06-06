@@ -8,7 +8,7 @@ import { renderSlide } from '../src/core/renderer.js';
 import { DeckLatticeError } from '../src/core/errors.js';
 import { sanitizeSvg } from '../src/core/svg.js';
 import { validateDeck } from '../src/core/validation.js';
-import { resolveSlide } from '../src/browser/screenshot.js';
+import { resolveSlide } from '../src/core/build.js';
 import type { ProjectContext } from '../src/core/types.js';
 
 async function projectContext(): Promise<ProjectContext> {

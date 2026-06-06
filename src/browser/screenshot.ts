@@ -4,30 +4,8 @@ import { chromium } from 'playwright';
 import { DeckLatticeError } from '../core/errors.js';
 import type { DeckData, ProjectContext } from '../core/types.js';
 import { startServer } from './server.js';
+import { resolveSlide } from '../core/build.js';
 
-interface SlideTarget {
-  id: string;
-  index: number;
-}
-
-function resolveSlide(data: DeckData, selector: string): SlideTarget {
-  if (/^[1-9]\d*$/.test(selector)) {
-    const index = Number(selector) - 1;
-    const slide = data.slides[index];
-    if (!slide) {
-      throw new DeckLatticeError(
-        `slide number ${selector} is out of range (1-${data.slides.length})`
-      );
-    }
-    return { id: slide.id, index };
-  }
-
-  const index = data.slides.findIndex((slide) => slide.id === selector);
-  if (index === -1) {
-    throw new DeckLatticeError(`slide id not found: ${selector}`);
-  }
-  return { id: data.slides[index].id, index };
-}
 
 export async function captureScreenshot(
   project: ProjectContext,
@@ -86,4 +64,3 @@ export async function captureScreenshot(
   }
 }
 
-export { resolveSlide };

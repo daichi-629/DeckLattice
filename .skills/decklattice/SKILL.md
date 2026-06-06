@@ -36,7 +36,7 @@ decklattice skill update
 8. Use `math` with `equation` for display equations. TeX delimiters also work in normal text.
 9. Put deck-specific visual styles in CSS listed by `additional_css`.
 10. Use `additional_classes` to target individual slides.
-11. Put page-specific HTML structure changes in `deck/patches/{slide_id}.patch`.
+11. Print the HTML before patch with `decklattice html-before --slide <number|id>`, write your patch, then verify the patched HTML with `decklattice html-after --slide <number|id>`. Put page-specific HTML structure changes in `deck/patches/{slide_id}.patch`.
 12. Validate, build, inspect, and export.
 
 The standard HTML and CSS are built into the CLI and are refreshed on every
@@ -103,6 +103,8 @@ decklattice validate
 decklattice build
 decklattice verify
 decklattice screenshot --slide <number|id>
+decklattice html-before --slide <number|id>
+decklattice html-after --slide <number|id>
 decklattice pdf
 decklattice template <html|css>
 decklattice skill update

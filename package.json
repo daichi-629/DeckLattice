@@ -38,9 +38,11 @@
   "license": "MIT",
   "dependencies": {
     "fast-xml-parser": "^5.2.5",
+    "js-beautify": "^1.15.4",
     "playwright": "^1.60.0"
   },
   "devDependencies": {
+    "@types/js-beautify": "^1.14.3",
     "@types/node": "^22.15.30",
     "typescript": "^5.8.3"
   },

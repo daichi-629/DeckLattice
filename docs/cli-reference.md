@@ -74,3 +74,30 @@ decklattice screenshot --slide slide-3 --output review/slide-3.png
 ```
 
 出力先省略時は `deck/output/{slide_id}.png` です。
+
+## html-before
+
+```bash
+decklattice html-before [directory] --slide <number|id>
+```
+
+指定したスライドの、パッチ適用前のHTML構造を標準出力に表示します。番号は 1 始まりです。`slides.json` の ID でも指定できます。パッチを作成する際のベースHTMLを取得するのに便利です。
+
+```bash
+decklattice html-before --slide 2
+decklattice html-before --slide result
+```
+
+## html-after
+
+```bash
+decklattice html-after [directory] --slide <number|id>
+```
+
+指定したスライドの、パッチ適用後のHTML構造を標準出力に表示します。番号は 1 始まりです。`slides.json` の ID でも指定できます。パッチが正しく適用されているか確認するのに便利です。
+
+```bash
+decklattice html-after --slide 2
+decklattice html-after --slide result
+```
+

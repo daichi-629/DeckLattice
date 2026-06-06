@@ -8,6 +8,9 @@ import { validateCommand } from './commands/validate.js';
 import { verifyCommand } from './commands/verify.js';
 import { templateCommand } from './commands/template.js';
 import { updateSkillCommand } from './commands/skill.js';
+import { htmlBeforeCommand } from './commands/html-before.js';
+import { htmlAfterCommand } from './commands/html-after.js';
+
 import { DeckLatticeError } from './core/errors.js';
 import { packageRoot } from './package.js';
 
@@ -20,6 +23,8 @@ Usage:
   decklattice verify [directory]
   decklattice pdf [directory] [--output <path>]
   decklattice screenshot [directory] --slide <number|id> [--output <path>]
+  decklattice html-before [directory] --slide <number|id>
+  decklattice html-after [directory] --slide <number|id>
   decklattice template <html|css>
   decklattice skill update [directory]
   decklattice --version
@@ -135,6 +140,24 @@ async function main(): Promise<void> {
         arguments_.slide,
         arguments_.directory,
         arguments_.output
+      );
+      break;
+    case 'html-before':
+      if (!arguments_.slide) {
+        throw new DeckLatticeError('html-before requires --slide <number|id>');
+      }
+      await htmlBeforeCommand(
+        arguments_.slide,
+        arguments_.directory
+      );
+      break;
+    case 'html-after':
+      if (!arguments_.slide) {
+        throw new DeckLatticeError('html-after requires --slide <number|id>');
+      }
+      await htmlAfterCommand(
+        arguments_.slide,
+        arguments_.directory
       );
       break;
     case 'template':
