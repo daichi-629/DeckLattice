@@ -7,8 +7,25 @@ Python やプロジェクトごとの npm 依存は不要です。
 
 ## インストール
 
+GitHub リポジトリから直接インストールするか、ローカルにクローンしてビルドします。
+
+### GitHub から直接インストールする場合
+
 ```bash
-npm install -g decklattice
+npm install -g git+https://github.com/daichi-629/DeckLattice.git
+npx playwright install chromium
+```
+
+### ローカルにクローンしてインストールする場合（開発者向け）
+
+```bash
+git clone https://github.com/daichi-629/DeckLattice.git
+cd DeckLattice
+npm install
+npm run build
+npm link
+
+# Playwright のブラウザをインストール
 npx playwright install chromium
 ```
 
