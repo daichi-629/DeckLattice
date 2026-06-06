@@ -37,13 +37,17 @@
   "homepage": "https://github.com/daichi-629/DeckLattice#readme",
   "license": "MIT",
   "dependencies": {
+    "escape-html": "^1.0.3",
     "fast-xml-parser": "^5.2.5",
     "js-beautify": "^1.15.4",
+    "nunjucks": "^3.2.4",
     "playwright": "^1.60.0"
   },
   "devDependencies": {
+    "@types/escape-html": "^1.0.4",
     "@types/js-beautify": "^1.14.3",
     "@types/node": "^22.15.30",
+    "@types/nunjucks": "^3.2.6",
     "typescript": "^5.8.3"
   },
   "engines": {

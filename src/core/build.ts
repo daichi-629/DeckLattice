@@ -5,6 +5,7 @@ import {
   writeFile
 } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
+import nunjucks from 'nunjucks';
 import { applyPatch } from './patch.js';
 import { renderSlide } from './renderer.js';
 import { escapeHtml, formatHtml } from './html.js';
@@ -96,12 +97,15 @@ async function renderDeck(
   const cssLinks = (data.additional_css ?? [])
     .map((path) => `  <link rel="stylesheet" href="${escapeHtml(path)}">`)
     .join('\n');
-  return template
-    .replace('{{ deck_title }}', escapeHtml(data.deck_title))
-    .replace('{{ lang }}', escapeHtml(data.lang ?? 'ja'))
-    .replace('{{ styles_css }}', styles)
-    .replace('{{ additional_css }}', cssLinks)
-    .replace('{{ slides_html }}', slides.join('\n'));
+
+  const env = new nunjucks.Environment(null, { autoescape: false });
+  return env.renderString(template, {
+    deck_title: escapeHtml(data.deck_title),
+    lang: escapeHtml(data.lang ?? 'ja'),
+    styles_css: styles,
+    additional_css: cssLinks,
+    slides_html: slides.join('\n')
+  });
 }
 
 export async function buildProject(

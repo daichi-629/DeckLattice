@@ -1,13 +1,10 @@
 import beautify from 'js-beautify';
+import escapeHtmlLib from 'escape-html';
 
 export function escapeHtml(value: unknown): string {
-  return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#x27;');
+  return escapeHtmlLib(String(value));
 }
+
 
 export function inlineMarkdown(raw: string): string {
   return escapeHtml(raw)
