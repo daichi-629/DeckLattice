@@ -1,0 +1,7 @@
+interface:
+  display_name: "DeckLattice"
+  short_description: "Build and verify structured HTML slide decks"
+  default_prompt: "Use $decklattice to create and validate a structured HTML presentation."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,37 @@
+{
+  "deck_title": "Presentation Title",
+  "lang": "ja",
+  "audience": "Target audience",
+  "tone": "Clear and concise",
+  "additional_css": ["additional.css"],
+  "slides": [
+    {
+      "id": "title",
+      "type": "title",
+      "headline": "Presentation Title",
+      "subtitle": "Replace this subtitle with the key message",
+      "meta": ["Author", "Date"],
+      "speaker_note": "Introduce the presentation and its purpose."
+    },
+    {
+      "id": "overview",
+      "type": "summary",
+      "headline": "Overview",
+      "items": [
+        {
+          "title": "Point 1",
+          "desc": "Replace with the first key point."
+        },
+        {
+          "title": "Point 2",
+          "desc": "Replace with the second key point."
+        },
+        {
+          "title": "Point 3",
+          "desc": "Replace with the third key point."
+        }
+      ],
+      "speaker_note": "Explain the structure of the presentation."
+    }
+  ]
+}

@@ -1,0 +1,587 @@
+/* ==========================================================================
+   CSS Design Tokens & Reveal.js Overrides
+   ========================================================================== */
+
+:root {
+  /* Colors (Slate & Sky Premium Palette) */
+  --color-bg: #0f172a;           /* Dark Slate */
+  --color-bg-light: #1e293b;     /* Card/Highlight Slate */
+  --color-text: #f8fafc;         /* Crisp White/Slate */
+  --color-muted: #94a3b8;        /* Muted Gray */
+  --color-accent: #38bdf8;       /* Electric Sky Blue */
+  --color-accent-gradient: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+  --color-border: #334155;       /* Border Gray */
+  
+  /* Typography */
+  --font-main: "Inter", "Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-code: "JetBrains Mono", "Fira Code", monospace;
+  
+  /* Spacing */
+  --space-xs: 12px;
+  --space-sm: 24px;
+  --space-md: 40px;
+  --space-lg: 64px;
+  --space-xl: 80px;
+
+  /* Font Sizes (Tailored for 1280x720 canvas) */
+  --text-title: 56px;
+  --text-heading: 40px;
+  --text-subheading: 28px;
+  --text-body: 22px;
+  --text-small: 16px;
+  
+  /* Utilities */
+  --border-radius: 12px;
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================================
+   Reveal.js Base Overrides
+   ========================================================================== */
+.reveal {
+  font-family: var(--font-main) !important;
+  color: var(--color-text) !important;
+  background-color: var(--color-bg) !important;
+}
+
+/* Force Slide dimensions and disable default centering if using our templates */
+.reveal .slides {
+  text-align: left !important;
+}
+
+.reveal .slides section {
+  box-sizing: border-box !important;
+  padding: 40px 60px !important; /* padding inside the Reveal.js slide container */
+  height: 100% !important;
+  top: 0 !important;
+}
+
+/* Header/Footer within slide content */
+.slide-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.slide-header {
+  width: 100%;
+  margin-bottom: var(--space-md);
+  flex-shrink: 0;
+}
+
+.slide-headline {
+  font-size: var(--text-heading) !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+  color: var(--color-text) !important;
+  letter-spacing: -0.02em !important;
+  margin: 0 !important;
+  text-transform: none !important; /* Disable Reveal.js default uppercase */
+}
+
+/* Body of the slide */
+.slide-body {
+  width: 100%;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  box-sizing: border-box;
+}
+
+/* Footer elements */
+.slide-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--color-muted);
+  font-size: var(--text-small);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: var(--space-xs);
+  pointer-events: none;
+}
+
+.slide-number {
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Template Specific Styles (Applied to .slide-content)
+   ========================================================================== */
+
+/* 1. Title Slide */
+.slide-content.title {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: radial-gradient(circle at top left, #1e1b4b 0%, var(--color-bg) 60%);
+  height: 100%;
+}
+
+.slide-content.title .title-container {
+  max-width: 1000px;
+}
+
+.slide-content.title h1 {
+  font-size: var(--text-title) !important;
+  font-weight: 900 !important;
+  line-height: 1.15 !important;
+  background: var(--color-accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: var(--space-sm) !important;
+  letter-spacing: -0.03em !important;
+  text-transform: none !important;
+}
+
+.slide-content.title .subtitle {
+  font-size: var(--text-subheading);
+  color: var(--color-muted);
+  font-weight: 500;
+  margin-bottom: var(--space-lg);
+  line-height: 1.4;
+}
+
+.slide-content.title .meta-info {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+  color: var(--color-muted);
+  font-size: var(--text-small);
+}
+
+/* 2. Section Separator */
+.slide-content.section {
+  justify-content: center;
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  border-left: 8px solid var(--color-accent);
+  padding-left: var(--space-md);
+}
+
+.slide-content.section .section-label {
+  font-size: var(--text-small);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--color-accent);
+  font-weight: 700;
+  margin-bottom: var(--space-xs);
+}
+
+.slide-content.section h2 {
+  font-size: var(--text-title) !important;
+  font-weight: 900 !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+  text-transform: none !important;
+  color: var(--color-text) !important;
+}
+
+/* 3. Message Slide */
+.slide-content.message {
+  justify-content: center;
+  align-items: center;
+}
+
+.slide-content.message .message-text {
+  font-size: var(--text-subheading);
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--color-text);
+  max-width: 900px;
+  border-left: 4px solid var(--color-accent);
+  padding-left: var(--space-md);
+  text-align: left;
+}
+
+/* 4. Two Column Layout */
+.slide-content.two_column .slide-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.column-title {
+  font-size: var(--text-subheading);
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-bottom: var(--space-xs);
+}
+
+/* Lists styling inside slides */
+.reveal ul {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.reveal li {
+  font-size: var(--text-body) !important;
+  line-height: 1.6 !important;
+  color: var(--color-muted) !important;
+  position: relative !important;
+  padding-left: var(--space-md) !important;
+  margin-bottom: var(--space-xs) !important;
+  list-style-type: none !important;
+}
+
+.reveal li::before {
+  content: "•";
+  color: var(--color-accent);
+  font-weight: bold;
+  position: absolute;
+  left: var(--space-sm);
+  font-size: 1.2em;
+}
+
+/* 5. Image Right Layout */
+.slide-content.image_right .slide-body {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: var(--space-lg);
+  align-items: center;
+}
+
+.slide-content.image_right .image-container {
+  width: 100%;
+  height: 100%;
+  max-height: 380px;
+  margin: 0;
+  box-sizing: border-box;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.slide-content.image_right img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media-caption {
+  margin-top: 8px;
+  color: var(--color-muted);
+  font-size: var(--text-small);
+  line-height: 1.3;
+}
+
+.full-image-container {
+  width: 100%;
+  height: 430px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+}
+
+.full-image-container img {
+  width: 100%;
+  height: calc(100% - 30px);
+  object-fit: cover;
+}
+
+/* 6. Chart Layout */
+.slide-content.chart .slide-body {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: var(--space-lg);
+  align-items: center;
+}
+
+.slide-content.chart .chart-container {
+  width: 100%;
+  height: 100%;
+  max-height: 380px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--color-bg-light);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-sm);
+}
+
+.slide-content.chart svg {
+  width: 100%;
+  height: 100%;
+}
+
+.slide-content.chart rect {
+  fill: var(--color-accent);
+}
+
+.slide-content.chart line {
+  stroke: var(--color-border);
+  stroke-width: 2;
+}
+
+/* 7. Quote Slide */
+.slide-content.quote {
+  justify-content: center;
+}
+
+.quote-container {
+  position: relative;
+  padding-left: var(--space-xl);
+  max-width: 1000px;
+}
+
+.quote-container::before {
+  content: "“";
+  font-size: 160px;
+  font-family: serif;
+  color: var(--color-accent);
+  opacity: 0.3;
+  position: absolute;
+  left: -20px;
+  top: -60px;
+}
+
+.quote-text {
+  font-size: var(--text-subheading);
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: var(--space-sm);
+}
+
+.quote-author {
+  font-size: var(--text-body);
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+/* 8. Code Slide */
+.slide-content.code .slide-body {
+  display: grid;
+  grid-template-columns: 1fr;
+  height: 100%;
+}
+
+.code-container {
+  background: #090d16;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-sm) var(--space-md);
+  overflow: auto;
+  height: 100%;
+  max-height: 380px;
+}
+
+.code-container pre {
+  margin: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.code-container code {
+  font-family: var(--font-code) !important;
+  font-size: 18px !important;
+  line-height: 1.5 !important;
+  color: #e2e8f0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+/* 9. Summary Layout */
+.slide-content.summary .slide-body {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.summary-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.summary-item {
+  background: var(--color-bg-light);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summary-item-title {
+  font-size: var(--text-body);
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.summary-item-desc {
+  font-size: var(--text-small);
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+/* 10. Three-column feature cards */
+.slide-content.three_column .slide-body {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+}
+
+.feature-card,
+.metric-card {
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-light);
+}
+
+.feature-desc {
+  color: var(--color-muted);
+  font-size: var(--text-body);
+  line-height: 1.5;
+}
+
+/* 11. Metrics */
+.slide-content.metrics .slide-body {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.metric-card {
+  text-align: center;
+}
+
+.metric-value {
+  color: var(--color-accent);
+  font-size: var(--text-heading);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.metric-label {
+  margin-top: var(--space-xs);
+  color: var(--color-muted);
+  font-size: var(--text-small);
+}
+
+/* 12. Process */
+.slide-content.process .slide-body {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+}
+
+.process-step {
+  position: relative;
+  padding: var(--space-sm);
+  border-top: 3px solid var(--color-accent);
+  background: var(--color-bg-light);
+}
+
+.process-number {
+  color: var(--color-accent);
+  font-size: var(--text-small);
+  font-weight: 800;
+}
+
+.process-title,
+.timeline-title {
+  margin: 8px 0;
+  color: var(--color-text);
+  font-size: var(--text-body);
+  font-weight: 700;
+}
+
+.process-desc,
+.timeline-desc {
+  color: var(--color-muted);
+  font-size: var(--text-small);
+  line-height: 1.45;
+}
+
+/* 13. Table */
+.slide-content.table_slide table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-small);
+}
+
+.slide-content.table_slide th,
+.slide-content.table_slide td {
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.slide-content.table_slide th {
+  color: var(--color-accent);
+  background: var(--color-bg-light);
+}
+
+/* 14. Timeline */
+.slide-content.timeline .slide-body {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+}
+
+.timeline-event {
+  padding-left: var(--space-sm);
+  border-left: 3px solid var(--color-accent);
+}
+
+.timeline-label {
+  color: var(--color-accent);
+  font-size: var(--text-small);
+  font-weight: 700;
+}
+
+/* 15. References */
+.slide-content.references ol {
+  margin: 0;
+  padding-left: var(--space-md);
+}
+
+.reference-item {
+  margin-bottom: var(--space-xs);
+  color: var(--color-text);
+  font-size: var(--text-small);
+}
+
+.reference-item span,
+.reference-item a {
+  display: block;
+}
+
+.reference-item a {
+  color: var(--color-accent);
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================================================
+   Print / PDF Mode Tweaks
+   ========================================================================== */
+@media print {
+  /* Override print dimensions to ensure perfectly fitted margins */
+  .reveal .slides section {
+    padding: 40px 60px !important;
+    background-color: var(--color-bg) !important;
+    color: var(--color-text) !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

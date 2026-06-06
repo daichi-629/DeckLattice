@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ deck_title }}</title>
+  
+  <!-- Reveal.js styles -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/theme/black.css" id="theme">
+  
+  <!-- Theme used for syntax highlighted code -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/plugin/highlight/monokai.css">
+
+  <!-- Custom Styles (CSS Tokens and Layouts) -->
+  <link rel="stylesheet" href="styles.css">
+{{ additional_css }}
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+JP:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+{{ slides_html }}
+    </div>
+  </div>
+
+  <!-- Reveal.js scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/plugin/notes.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/plugin/markdown.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@6.0.1/dist/plugin/highlight.js"></script>
+  
+  <script>
+    Reveal.initialize({
+      hash: true,
+      
+      // Fixed size: 16:9 1280x720
+      width: 1280,
+      height: 720,
+      margin: 0.05,
+      minScale: 0.2,
+      maxScale: 2.0,
+      
+      // Slide number formatting
+      slideNumber: 'c/t',
+      
+      // Control configuration
+      controls: true,
+      progress: true,
+      center: false, // Disables vertical centering globally, as our layouts handle positioning
+      
+      // Plugins
+      plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+    }).then(async () => {
+      if (!new URLSearchParams(window.location.search).has('validate')) return;
+      await document.fonts.ready;
+      await Promise.all(Array.from(document.images).map((image) => {
+        if (image.complete) return Promise.resolve();
+        return new Promise((resolve) => {
+          image.addEventListener('load', resolve, { once: true });
+          image.addEventListener('error', resolve, { once: true });
+        });
+      }));
+
+      const issues = [];
+      document.querySelectorAll('.slides > section').forEach((slide) => {
+        const content = slide.querySelector('.slide-content');
+        if (content && (
+          content.scrollWidth > content.clientWidth + 1 ||
+          content.scrollHeight > content.clientHeight + 1
+        )) {
+          issues.push({ slide: slide.dataset.slideId, issue: 'overflow' });
+        }
+        slide.querySelectorAll('img').forEach((image) => {
+          if (!image.complete || image.naturalWidth === 0) {
+            issues.push({ slide: slide.dataset.slideId, issue: 'image-load', src: image.src });
+          }
+          if (!image.alt.trim()) {
+            issues.push({ slide: slide.dataset.slideId, issue: 'missing-alt', src: image.src });
+          }
+        });
+      });
+      const report = document.createElement('pre');
+      report.id = 'slide-validation-report';
+      report.textContent = JSON.stringify({ ok: issues.length === 0, issues });
+      document.body.appendChild(report);
+    });
+  </script>
+</body>
+</html>

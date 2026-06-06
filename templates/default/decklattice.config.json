@@ -1,0 +1,5 @@
+{
+  "deckDir": "deck",
+  "output": "deck/index.html",
+  "pdfOutput": "deck/output/slides.pdf"
+}
