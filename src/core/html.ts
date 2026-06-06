@@ -6,3 +6,10 @@ export function escapeHtml(value: unknown): string {
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#x27;');
 }
+
+export function inlineMarkdown(raw: string): string {
+  return escapeHtml(raw)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`(.+?)`/g, '<code>$1</code>');
+}

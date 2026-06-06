@@ -30,6 +30,7 @@ export type SlideType =
   | 'two_column'
   | 'three_column'
   | 'image_right'
+  | 'image_left'
   | 'full_image'
   | 'chart'
   | 'mermaid'
@@ -41,7 +42,15 @@ export type SlideType =
   | 'process'
   | 'table'
   | 'timeline'
-  | 'references';
+  | 'references'
+  | 'v2-hero'
+  | 'v2-section'
+  | 'v2-full'
+  | 'v2-sidebar-right'
+  | 'v2-sidebar-left'
+  | 'v2-columns-2'
+  | 'v2-columns-3'
+  | 'v2-header-body';
 
 export interface DeckData {
   deck_title: string;

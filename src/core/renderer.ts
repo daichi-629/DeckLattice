@@ -1,5 +1,6 @@
-import { escapeHtml } from './html.js';
+import { escapeHtml, inlineMarkdown } from './html.js';
 import { sanitizeSvg } from './svg.js';
+import { renderSlideBodyV2 } from './v2/renderer.js';
 import type { BaseSlide } from './types.js';
 import { DeckLatticeError } from './errors.js';
 
@@ -39,7 +40,7 @@ function footerHtml(deckTitle: string, index: number, total: number): string {
 }
 
 function listHtml(items: string[]): string {
-  return `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
+  return `<ul>${items.map((item) => `<li>${inlineMarkdown(item)}</li>`).join('')}</ul>`;
 }
 
 function mediaCaption(slide: UnknownRecord): string {
@@ -67,6 +68,10 @@ function renderBody(
     ? headerHtml(headline)
     : '';
   const footer = footerHtml(deckTitle, index, total);
+
+  if (type.startsWith('v2-')) {
+    return renderSlideBodyV2(source, index, total, deckTitle, sectionNumber);
+  }
 
   switch (type) {
     case 'title': {
@@ -103,11 +108,28 @@ function renderBody(
     case 'two_column': {
       const columns = ['left', 'right'].map((side) => {
         const column = record(slide[side]);
-        return (
-          '<div class="column">'
-          + `<div class="column-title">${escapeHtml(text(column, 'title'))}</div>`
-          + `${listHtml(strings(column.items))}</div>`
-        );
+        const columnType = text(column, 'type', 'text');
+        let body: string;
+        if (columnType === 'image') {
+          body = (
+            '<figure class="image-container">'
+            + `<img src="${escapeHtml(text(column, 'image_url'))}" `
+            + `alt="${escapeHtml(text(column, 'image_alt'))}">`
+            + '</figure>'
+          );
+        } else if (columnType === 'code') {
+          body = (
+            '<div class="code-container"><pre>'
+            + `<code class="language-${escapeHtml(text(column, 'language', 'plaintext'))}">`
+            + `${escapeHtml(text(column, 'code'))}</code></pre></div>`
+          );
+        } else {
+          body = listHtml(strings(column.items));
+        }
+        const titleHtml = column.title
+          ? `<div class="column-title">${escapeHtml(text(column, 'title'))}</div>`
+          : '';
+        return `<div class="column">${titleHtml}${body}</div>`;
       }).join('');
       return (
         `<div class="slide-content two_column">${header}`
@@ -136,6 +158,20 @@ function renderBody(
         `<div class="slide-content image_right">${header}<div class="slide-body">`
         + `<div class="column">${listHtml(strings(slide.items))}</div>`
         + `<div class="column">${image}</div></div>${footer}</div>`
+      );
+    }
+    case 'image_left': {
+      const image = (
+        '<figure class="image-container">'
+        + `<img src="${escapeHtml(text(slide, 'image_url'))}" `
+        + `alt="${escapeHtml(text(slide, 'image_alt'))}">`
+        + `${mediaCaption(slide)}</figure>`
+      );
+      return (
+        `<div class="slide-content image_left">${header}<div class="slide-body">`
+        + `<div class="column">${image}</div>`
+        + `<div class="column">${listHtml(strings(slide.items))}</div>`
+        + `</div>${footer}</div>`
       );
     }
     case 'full_image': {
@@ -217,10 +253,14 @@ function renderBody(
       );
     }
     case 'code': {
+      const highlightLines = text(slide, 'highlight_lines');
+      const lineNumbersAttr = highlightLines
+        ? ` data-line-numbers="${escapeHtml(highlightLines)}"`
+        : '';
       return (
         `<div class="slide-content code">${header}<div class="slide-body">`
         + '<div class="code-container"><pre>'
-        + `<code class="language-${escapeHtml(text(slide, 'language', 'plaintext'))}">`
+        + `<code class="language-${escapeHtml(text(slide, 'language', 'plaintext'))}"${lineNumbersAttr}>`
         + `${escapeHtml(text(slide, 'code'))}</code></pre></div></div>${footer}</div>`
       );
     }

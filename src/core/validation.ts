@@ -2,6 +2,7 @@ import { access } from 'node:fs/promises';
 import { extname, isAbsolute, relative, resolve } from 'node:path';
 import { DeckLatticeError } from './errors.js';
 import { sanitizeSvg } from './svg.js';
+import { validateV2Slide } from './v2/validation.js';
 import type { BaseSlide, DeckData, ProjectContext, SlideType } from './types.js';
 
 const SLIDE_TYPES = new Set<SlideType>([
@@ -11,6 +12,7 @@ const SLIDE_TYPES = new Set<SlideType>([
   'two_column',
   'three_column',
   'image_right',
+  'image_left',
   'full_image',
   'chart',
   'mermaid',
@@ -22,7 +24,26 @@ const SLIDE_TYPES = new Set<SlideType>([
   'process',
   'table',
   'timeline',
-  'references'
+  'references',
+  'v2-hero',
+  'v2-section',
+  'v2-full',
+  'v2-sidebar-right',
+  'v2-sidebar-left',
+  'v2-columns-2',
+  'v2-columns-3',
+  'v2-header-body'
+]);
+
+const V2_LAYOUTS = new Set<SlideType>([
+  'v2-hero',
+  'v2-section',
+  'v2-full',
+  'v2-sidebar-right',
+  'v2-sidebar-left',
+  'v2-columns-2',
+  'v2-columns-3',
+  'v2-header-body'
 ]);
 
 const REQUIRED_FIELDS: Record<SlideType, string[]> = {
@@ -32,6 +53,7 @@ const REQUIRED_FIELDS: Record<SlideType, string[]> = {
   two_column: ['headline', 'left', 'right'],
   three_column: ['headline', 'columns'],
   image_right: ['headline', 'items', 'image_url', 'image_alt'],
+  image_left: ['headline', 'items', 'image_url', 'image_alt'],
   full_image: ['headline', 'image_url', 'image_alt'],
   chart: ['headline', 'items'],
   mermaid: ['headline', 'diagram'],
@@ -43,7 +65,15 @@ const REQUIRED_FIELDS: Record<SlideType, string[]> = {
   process: ['headline', 'steps'],
   table: ['headline', 'columns', 'rows'],
   timeline: ['headline', 'events'],
-  references: ['headline', 'items']
+  references: ['headline', 'items'],
+  'v2-hero':         ['headline'],
+  'v2-section':      ['headline'],
+  'v2-full':         [],
+  'v2-sidebar-right':['headline'],
+  'v2-sidebar-left': ['headline'],
+  'v2-columns-2':    [],
+  'v2-columns-3':    [],
+  'v2-header-body':  ['headline']
 };
 
 function objectValue(value: unknown, path: string): Record<string, unknown> {
@@ -149,7 +179,7 @@ function validateSlide(slideValue: unknown, index: number): BaseSlide {
     throw new DeckLatticeError(`${path}.speaker_note must be at most 4000 characters`);
   }
   if ('meta' in slide) stringArray(slide.meta, `${path}.meta`);
-  if (type === 'image_right' || type === 'chart') {
+  if (type === 'image_right' || type === 'image_left' || type === 'chart') {
     stringArray(slide.items, `${path}.items`, 1, 5);
   }
   if (type === 'mermaid' && 'items' in slide) {
@@ -182,8 +212,23 @@ function validateSlide(slideValue: unknown, index: number): BaseSlide {
   if (type === 'two_column') {
     for (const side of ['left', 'right']) {
       const column = objectValue(slide[side], `${path}.${side}`);
-      stringValue(column.title, `${path}.${side}.title`);
-      stringArray(column.items, `${path}.${side}.items`, 1, 5);
+      const columnType = typeof column.type === 'string' ? column.type : 'text';
+      if (!['text', 'image', 'code'].includes(columnType)) {
+        throw new DeckLatticeError(
+          `${path}.${side}.type must be "text", "image", or "code"`
+        );
+      }
+      if ('title' in column) stringValue(column.title, `${path}.${side}.title`);
+      if (columnType === 'image') {
+        stringValue(column.image_url, `${path}.${side}.image_url`);
+        stringValue(column.image_alt, `${path}.${side}.image_alt`);
+      } else if (columnType === 'code') {
+        stringValue(column.code, `${path}.${side}.code`);
+        if ('language' in column) stringValue(column.language, `${path}.${side}.language`);
+      } else {
+        stringValue(column.title, `${path}.${side}.title`);
+        stringArray(column.items, `${path}.${side}.items`, 1, 5);
+      }
     }
   }
   if (type === 'three_column') {
@@ -223,6 +268,9 @@ function validateSlide(slideValue: unknown, index: number): BaseSlide {
       stringValue(reference.url, `${path}.items[${itemIndex}].url`);
     });
   }
+  if (type === 'code' && 'highlight_lines' in slide) {
+    stringValue(slide.highlight_lines, `${path}.highlight_lines`);
+  }
   if (type === 'chart' && 'chart_svg' in slide) {
     sanitizeSvg(stringValue(slide.chart_svg, `${path}.chart_svg`), `${path}.chart_svg`);
   }
@@ -230,6 +278,9 @@ function validateSlide(slideValue: unknown, index: number): BaseSlide {
     const config = objectValue(slide.chart_config, `${path}.chart_config`);
     stringValue(config.type, `${path}.chart_config.type`);
     objectValue(config.data, `${path}.chart_config.data`);
+  }
+  if (V2_LAYOUTS.has(type)) {
+    validateV2Slide(slide, path);
   }
 
   return slide as unknown as BaseSlide;

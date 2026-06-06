@@ -23,6 +23,67 @@
   },
   "additionalProperties": false,
   "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "itemsList": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1,
+      "maxItems": 5
+    },
+    "titleDescList": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title", "desc"],
+        "properties": {
+          "title": { "type": "string", "minLength": 1 },
+          "desc": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "columnText": {
+      "type": "object",
+      "required": ["title", "items"],
+      "properties": {
+        "type": { "const": "text" },
+        "title": { "type": "string", "minLength": 1 },
+        "items": { "$ref": "#/$defs/itemsList" }
+      },
+      "additionalProperties": false
+    },
+    "columnImage": {
+      "type": "object",
+      "required": ["type", "image_url", "image_alt"],
+      "properties": {
+        "type": { "const": "image" },
+        "title": { "type": "string", "minLength": 1 },
+        "image_url": { "type": "string", "minLength": 1 },
+        "image_alt": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "columnCode": {
+      "type": "object",
+      "required": ["type", "code"],
+      "properties": {
+        "type": { "const": "code" },
+        "title": { "type": "string", "minLength": 1 },
+        "code": { "type": "string", "minLength": 1 },
+        "language": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "column": {
+      "oneOf": [
+        { "$ref": "#/$defs/columnText" },
+        { "$ref": "#/$defs/columnImage" },
+        { "$ref": "#/$defs/columnCode" }
+      ]
+    },
     "base": {
       "type": "object",
       "required": ["id", "type"],
@@ -39,6 +100,7 @@
             "two_column",
             "three_column",
             "image_right",
+            "image_left",
             "full_image",
             "chart",
             "mermaid",
@@ -50,7 +112,15 @@
             "process",
             "table",
             "timeline",
-            "references"
+            "references",
+            "v2-hero",
+            "v2-section",
+            "v2-full",
+            "v2-sidebar-right",
+            "v2-sidebar-left",
+            "v2-columns-2",
+            "v2-columns-3",
+            "v2-header-body"
           ]
         },
         "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
@@ -82,82 +152,622 @@
         {
           "oneOf": [
             {
-              "properties": { "type": { "const": "title" } },
+              "title": "Title slide",
+              "properties": {
+                "type": { "const": "title" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "subtitle": { "type": "string", "minLength": 1 },
+                "meta": {
+                  "type": "array",
+                  "items": { "type": "string", "minLength": 1 }
+                }
+              },
               "required": ["headline"]
             },
             {
-              "properties": { "type": { "const": "section" } },
+              "title": "Section divider",
+              "properties": {
+                "type": { "const": "section" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "section_label": { "type": "string", "minLength": 1 }
+              },
               "required": ["headline"]
             },
             {
-              "properties": { "type": { "const": "message" } },
+              "title": "Message slide",
+              "properties": {
+                "type": { "const": "message" },
+                "message": { "type": "string", "minLength": 1 },
+                "message_lines": {
+                  "type": "array",
+                  "items": { "type": "string", "minLength": 1 },
+                  "minItems": 1,
+                  "maxItems": 4
+                }
+              },
               "anyOf": [
                 { "required": ["message"] },
                 { "required": ["message_lines"] }
               ]
             },
             {
-              "properties": { "type": { "const": "two_column" } },
+              "title": "Two-column layout",
+              "properties": {
+                "type": { "const": "two_column" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "left": { "$ref": "#/$defs/column" },
+                "right": { "$ref": "#/$defs/column" }
+              },
               "required": ["headline", "left", "right"]
             },
             {
-              "properties": { "type": { "const": "three_column" } },
+              "title": "Three-column feature cards",
+              "properties": {
+                "type": { "const": "three_column" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "columns": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["title", "desc"],
+                    "properties": {
+                      "title": { "type": "string", "minLength": 1 },
+                      "desc": { "type": "string", "minLength": 1 }
+                    },
+                    "additionalProperties": false
+                  },
+                  "minItems": 3,
+                  "maxItems": 3
+                }
+              },
               "required": ["headline", "columns"]
             },
             {
-              "properties": { "type": { "const": "image_right" } },
+              "title": "Image on the right",
+              "properties": {
+                "type": { "const": "image_right" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "items": { "$ref": "#/$defs/itemsList" },
+                "image_url": { "type": "string", "minLength": 1 },
+                "image_alt": { "type": "string", "minLength": 1 },
+                "image_caption": { "type": "string", "minLength": 1 },
+                "source": { "type": "string", "minLength": 1 }
+              },
               "required": ["headline", "items", "image_url", "image_alt"]
             },
             {
-              "properties": { "type": { "const": "full_image" } },
+              "title": "Image on the left",
+              "properties": {
+                "type": { "const": "image_left" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "items": { "$ref": "#/$defs/itemsList" },
+                "image_url": { "type": "string", "minLength": 1 },
+                "image_alt": { "type": "string", "minLength": 1 },
+                "image_caption": { "type": "string", "minLength": 1 },
+                "source": { "type": "string", "minLength": 1 }
+              },
+              "required": ["headline", "items", "image_url", "image_alt"]
+            },
+            {
+              "title": "Full-bleed image",
+              "properties": {
+                "type": { "const": "full_image" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "image_url": { "type": "string", "minLength": 1 },
+                "image_alt": { "type": "string", "minLength": 1 },
+                "image_caption": { "type": "string", "minLength": 1 },
+                "source": { "type": "string", "minLength": 1 }
+              },
               "required": ["headline", "image_url", "image_alt"]
             },
             {
-              "properties": { "type": { "const": "chart" } },
+              "title": "Chart with bullet points",
+              "properties": {
+                "type": { "const": "chart" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "items": { "$ref": "#/$defs/itemsList" },
+                "chart_svg": { "type": "string", "minLength": 1 },
+                "chart_alt": { "type": "string", "minLength": 1 },
+                "chart_config": {
+                  "type": "object",
+                  "required": ["type", "data"],
+                  "properties": {
+                    "type": { "type": "string", "minLength": 1 },
+                    "data": { "type": "object" },
+                    "options": { "type": "object" }
+                  }
+                }
+              },
               "required": ["headline", "items"]
             },
             {
-              "properties": { "type": { "const": "mermaid" } },
+              "title": "Mermaid diagram",
+              "properties": {
+                "type": { "const": "mermaid" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "diagram": { "type": "string", "minLength": 1 },
+                "items": {
+                  "type": "array",
+                  "items": { "type": "string", "minLength": 1 },
+                  "minItems": 1,
+                  "maxItems": 4
+                }
+              },
               "required": ["headline", "diagram"]
             },
             {
-              "properties": { "type": { "const": "math" } },
+              "title": "Math equation",
+              "properties": {
+                "type": { "const": "math" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "equation": { "type": "string", "minLength": 1 },
+                "items": {
+                  "type": "array",
+                  "items": { "type": "string", "minLength": 1 },
+                  "minItems": 1,
+                  "maxItems": 4
+                }
+              },
               "required": ["headline", "equation"]
             },
             {
-              "properties": { "type": { "const": "quote" } },
+              "title": "Pull quote",
+              "properties": {
+                "type": { "const": "quote" },
+                "quote": { "type": "string", "minLength": 1 },
+                "author": { "type": "string", "minLength": 1 }
+              },
               "required": ["quote"]
             },
             {
-              "properties": { "type": { "const": "code" } },
+              "title": "Code listing",
+              "properties": {
+                "type": { "const": "code" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "code": { "type": "string", "minLength": 1 },
+                "language": { "type": "string", "minLength": 1 },
+                "highlight_lines": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Reveal.js data-line-numbers value, e.g. \"3-5,8\""
+                }
+              },
               "required": ["headline", "code"]
             },
             {
-              "properties": { "type": { "const": "summary" } },
+              "title": "Summary cards",
+              "properties": {
+                "type": { "const": "summary" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["title", "desc"],
+                    "properties": {
+                      "title": { "type": "string", "minLength": 1 },
+                      "desc": { "type": "string", "minLength": 1 }
+                    },
+                    "additionalProperties": false
+                  },
+                  "minItems": 1,
+                  "maxItems": 4
+                }
+              },
               "required": ["headline", "items"]
             },
             {
-              "properties": { "type": { "const": "metrics" } },
+              "title": "Key metrics",
+              "properties": {
+                "type": { "const": "metrics" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "metrics": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["value", "label"],
+                    "properties": {
+                      "value": { "type": "string", "minLength": 1 },
+                      "label": { "type": "string", "minLength": 1 }
+                    },
+                    "additionalProperties": false
+                  },
+                  "minItems": 1,
+                  "maxItems": 4
+                }
+              },
               "required": ["headline", "metrics"]
             },
             {
-              "properties": { "type": { "const": "process" } },
+              "title": "Process steps",
+              "properties": {
+                "type": { "const": "process" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "steps": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["title", "desc"],
+                    "properties": {
+                      "title": { "type": "string", "minLength": 1 },
+                      "desc": { "type": "string", "minLength": 1 }
+                    },
+                    "additionalProperties": false
+                  },
+                  "minItems": 2,
+                  "maxItems": 6
+                }
+              },
               "required": ["headline", "steps"]
             },
             {
-              "properties": { "type": { "const": "table" } },
+              "title": "Data table",
+              "properties": {
+                "type": { "const": "table" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "columns": {
+                  "type": "array",
+                  "items": { "type": "string", "minLength": 1 },
+                  "minItems": 1,
+                  "maxItems": 5
+                },
+                "rows": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "minItems": 1,
+                  "maxItems": 8
+                }
+              },
               "required": ["headline", "columns", "rows"]
             },
             {
-              "properties": { "type": { "const": "timeline" } },
+              "title": "Timeline",
+              "properties": {
+                "type": { "const": "timeline" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "events": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["label", "title", "desc"],
+                    "properties": {
+                      "label": { "type": "string", "minLength": 1 },
+                      "title": { "type": "string", "minLength": 1 },
+                      "desc": { "type": "string", "minLength": 1 }
+                    },
+                    "additionalProperties": false
+                  },
+                  "minItems": 1,
+                  "maxItems": 6
+                }
+              },
               "required": ["headline", "events"]
             },
             {
-              "properties": { "type": { "const": "references" } },
+              "title": "References list",
+              "properties": {
+                "type": { "const": "references" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["label", "url"],
+                    "properties": {
+                      "label": { "type": "string", "minLength": 1 },
+                      "url": { "type": "string", "minLength": 1 }
+                    },
+                    "additionalProperties": false
+                  },
+                  "minItems": 1,
+                  "maxItems": 8
+                }
+              },
               "required": ["headline", "items"]
+            },
+            {
+              "title": "v2 Hero slide",
+              "properties": {
+                "type": { "const": "v2-hero" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "slots": {
+                  "type": "object",
+                  "properties": {
+                    "subtitle": { "$ref": "#/$defs/v2BlockText" },
+                    "meta":     { "$ref": "#/$defs/v2BlockBullets" }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "required": ["headline"]
+            },
+            {
+              "title": "v2 Section break",
+              "properties": {
+                "type": { "const": "v2-section" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 }
+              },
+              "required": ["headline"]
+            },
+            {
+              "title": "v2 Full-width single block",
+              "properties": {
+                "type": { "const": "v2-full" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "slots": {
+                  "type": "object",
+                  "required": ["main"],
+                  "properties": { "main": { "$ref": "#/$defs/v2Block" } },
+                  "additionalProperties": false
+                }
+              },
+              "required": ["slots"]
+            },
+            {
+              "title": "v2 Sidebar right (content | aside)",
+              "properties": {
+                "type": { "const": "v2-sidebar-right" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "slots": {
+                  "type": "object",
+                  "required": ["main", "aside"],
+                  "properties": {
+                    "main":  { "$ref": "#/$defs/v2BlockSidebarMain" },
+                    "aside": { "$ref": "#/$defs/v2BlockSidebarAside" }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "required": ["headline", "slots"]
+            },
+            {
+              "title": "v2 Sidebar left (aside | content)",
+              "properties": {
+                "type": { "const": "v2-sidebar-left" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "slots": {
+                  "type": "object",
+                  "required": ["main", "aside"],
+                  "properties": {
+                    "main":  { "$ref": "#/$defs/v2BlockSidebarMain" },
+                    "aside": { "$ref": "#/$defs/v2BlockSidebarAside" }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "required": ["headline", "slots"]
+            },
+            {
+              "title": "v2 Two equal columns",
+              "properties": {
+                "type": { "const": "v2-columns-2" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "slots": {
+                  "type": "object",
+                  "required": ["left", "right"],
+                  "properties": {
+                    "left":  { "$ref": "#/$defs/v2Block" },
+                    "right": { "$ref": "#/$defs/v2Block" }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "required": ["slots"]
+            },
+            {
+              "title": "v2 Three equal columns",
+              "properties": {
+                "type": { "const": "v2-columns-3" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "slots": {
+                  "type": "object",
+                  "required": ["col1", "col2", "col3"],
+                  "properties": {
+                    "col1": { "$ref": "#/$defs/v2Block" },
+                    "col2": { "$ref": "#/$defs/v2Block" },
+                    "col3": { "$ref": "#/$defs/v2Block" }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "required": ["slots"]
+            },
+            {
+              "title": "v2 Header + full-width body",
+              "properties": {
+                "type": { "const": "v2-header-body" },
+                "headline": { "type": "string", "minLength": 1, "maxLength": 80 },
+                "slots": {
+                  "type": "object",
+                  "required": ["main"],
+                  "properties": { "main": { "$ref": "#/$defs/v2Block" } },
+                  "additionalProperties": false
+                }
+              },
+              "required": ["headline", "slots"]
             }
           ]
         }
+      ]
+    },
+    "v2BlockBullets": {
+      "type": "object",
+      "required": ["type", "items"],
+      "properties": {
+        "type": { "const": "bullets" },
+        "items": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1, "maxItems": 8 }
+      },
+      "additionalProperties": false
+    },
+    "v2BlockText": {
+      "type": "object",
+      "required": ["type", "content"],
+      "properties": {
+        "type":    { "const": "text" },
+        "content": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "v2BlockQuote": {
+      "type": "object",
+      "required": ["type", "quote"],
+      "properties": {
+        "type":   { "const": "quote" },
+        "quote":  { "type": "string", "minLength": 1 },
+        "author": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "v2BlockImage": {
+      "type": "object",
+      "required": ["type", "url", "alt"],
+      "properties": {
+        "type":    { "const": "image" },
+        "url":     { "type": "string", "minLength": 1 },
+        "alt":     { "type": "string", "minLength": 1 },
+        "caption": { "type": "string", "minLength": 1 },
+        "source":  { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "v2BlockCode": {
+      "type": "object",
+      "required": ["type", "code"],
+      "properties": {
+        "type":            { "const": "code" },
+        "code":            { "type": "string", "minLength": 1 },
+        "language":        { "type": "string", "minLength": 1 },
+        "highlight_lines": { "type": "string", "minLength": 1, "description": "Reveal.js data-line-numbers, e.g. \"3-5,8\"" }
+      },
+      "additionalProperties": false
+    },
+    "v2BlockChart": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "const": "chart" },
+        "svg":  { "type": "string", "minLength": 1 },
+        "alt":  { "type": "string", "minLength": 1 },
+        "config": {
+          "type": "object",
+          "required": ["type", "data"],
+          "properties": {
+            "type":    { "type": "string", "minLength": 1 },
+            "data":    { "type": "object" },
+            "options": { "type": "object" }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "v2BlockMermaid": {
+      "type": "object",
+      "required": ["type", "diagram"],
+      "properties": {
+        "type":    { "const": "mermaid" },
+        "diagram": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "v2BlockMath": {
+      "type": "object",
+      "required": ["type", "equation"],
+      "properties": {
+        "type":     { "const": "math" },
+        "equation": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "v2BlockMetrics": {
+      "type": "object",
+      "required": ["type", "items"],
+      "properties": {
+        "type": { "const": "metrics" },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["value", "label"],
+            "properties": {
+              "value": { "type": "string", "minLength": 1 },
+              "label": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 4
+        }
+      },
+      "additionalProperties": false
+    },
+    "v2BlockTimeline": {
+      "type": "object",
+      "required": ["type", "events"],
+      "properties": {
+        "type": { "const": "timeline" },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["label", "title", "desc"],
+            "properties": {
+              "label": { "type": "string", "minLength": 1 },
+              "title": { "type": "string", "minLength": 1 },
+              "desc":  { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 6
+        }
+      },
+      "additionalProperties": false
+    },
+    "v2BlockTable": {
+      "type": "object",
+      "required": ["type", "columns", "rows"],
+      "properties": {
+        "type":    { "const": "table" },
+        "columns": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1, "maxItems": 6 },
+        "rows":    { "type": "array", "items": { "type": "array", "items": { "type": "string" } }, "minItems": 1, "maxItems": 10 }
+      },
+      "additionalProperties": false
+    },
+    "v2Block": {
+      "oneOf": [
+        { "$ref": "#/$defs/v2BlockBullets"  },
+        { "$ref": "#/$defs/v2BlockText"     },
+        { "$ref": "#/$defs/v2BlockQuote"    },
+        { "$ref": "#/$defs/v2BlockImage"    },
+        { "$ref": "#/$defs/v2BlockCode"     },
+        { "$ref": "#/$defs/v2BlockChart"    },
+        { "$ref": "#/$defs/v2BlockMermaid"  },
+        { "$ref": "#/$defs/v2BlockMath"     },
+        { "$ref": "#/$defs/v2BlockMetrics"  },
+        { "$ref": "#/$defs/v2BlockTimeline" },
+        { "$ref": "#/$defs/v2BlockTable"    }
+      ]
+    },
+    "v2BlockSidebarMain": {
+      "oneOf": [
+        { "$ref": "#/$defs/v2BlockBullets"  },
+        { "$ref": "#/$defs/v2BlockText"     },
+        { "$ref": "#/$defs/v2BlockCode"     },
+        { "$ref": "#/$defs/v2BlockMetrics"  },
+        { "$ref": "#/$defs/v2BlockTimeline" },
+        { "$ref": "#/$defs/v2BlockTable"    }
+      ]
+    },
+    "v2BlockSidebarAside": {
+      "oneOf": [
+        { "$ref": "#/$defs/v2BlockImage"   },
+        { "$ref": "#/$defs/v2BlockChart"   },
+        { "$ref": "#/$defs/v2BlockMermaid" },
+        { "$ref": "#/$defs/v2BlockMath"    },
+        { "$ref": "#/$defs/v2BlockCode"    }
       ]
     }
   }
